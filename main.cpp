@@ -21,7 +21,7 @@ void bubble_sort(int n, int arr[]) {
                 ok = 1;
             }
         }
-    } while (ok);
+    } while (ok);                           //Compară și interschimbă elementele adiacente
 }
 
 void insertion_sort(int n, int arr[]) {
@@ -33,7 +33,7 @@ void insertion_sort(int n, int arr[]) {
             j--;
         }
         arr[j + 1] = key;
-    }
+    }                                      //Construiește lista sortată prin inserarea succesivă a fiecărui element nou
 }
 
 void selection_sort(int n, int arr[]) {
@@ -44,7 +44,7 @@ void selection_sort(int n, int arr[]) {
                 min_idx = j;
         }
         swap(arr[i], arr[min_idx]);
-    }
+    }                                     //Caută repetat valoarea minimă din restul listei și o mută la începutul zonei nesortate
 }
 
 void merge_helper(int arr[], int left, int mid, int right) {
@@ -73,7 +73,7 @@ void merge_sort_rec(int arr[], int left, int right) {
 }
 
 void merge_sort(int n, int arr[]) {
-    if (n > 1) merge_sort_rec(arr, 0, n - 1);
+    if (n > 1) merge_sort_rec(arr, 0, n - 1);             //Algoritm de tip "Divide et Impera" care împarte lista în jumătăți
 }
 
 void quick_sort(int n, int arr[]) {
@@ -88,7 +88,7 @@ void quick_sort(int n, int arr[]) {
     }
     quick_sort(i, arr);
     quick_sort(n - i, arr + i);
-}
+}                                                        //Alege un pivot și partitionează lista astfel încât elementele mai mici să ajungă în stânga acestuia
 
 void heapify(int arr[], int n, int i) {
     int largest = i;
@@ -109,16 +109,90 @@ void heap_sort(int n, int arr[]) {
         swap(arr[0], arr[i]);
         heapify(arr, i, 0);
     }
+}                                              //Organizează elementele într-o structură de date de tip morman
+
+void shell_sort(int n, int arr[]) {
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i++) {
+            int temp = arr[i];
+            int j;
+            for (j = i; j >= gap && arr[j - gap] > temp; j -= gap) {
+                arr[j] = arr[j - gap];
+            }
+            arr[j] = temp;
+        }
+    }                                         //O îmbunătățire a Insertion Sort care compară elemente aflate la distanțe mari
 }
 
+void cocktail_sort(int n, int arr[]) {
+    bool swapped = true;
+    int start = 0;
+    int end = n - 1;
+
+    while (swapped) {
+        swapped = false;
+        
+        for (int i = start; i < end; ++i) {
+            if (arr[i] > arr[i + 1]) {
+                int temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
+                swapped = true;
+            }
+        }
+        if (!swapped) break;
+        swapped = false;
+        --end;
+        
+        for (int i = end - 1; i >= start; --i) {
+            if (arr[i] > arr[i + 1]) {
+                int temp = arr[i];
+                arr[i] = arr[i + 1];
+                arr[i + 1] = temp;
+                swapped = true;
+            }
+        }
+        ++start;
+    }                                                   //O variantă bidirecțională de Bubble Sort care parcurge lista în ambele sensuri
+}
+
+void radix_sort(int n, int arr[]) {
+    if (n <= 1) return;
+    
+    int max_val = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] > max_val) max_val = arr[i];
+    }
+
+    for (int exp = 1; max_val / exp > 0; exp *= 10) {
+        int* output = new int[n];
+        int count[10] = {0};
+
+        for (int i = 0; i < n; i++) {
+            count[(arr[i] / exp) % 10]++;
+        }
+        for (int i = 1; i < 10; i++) {
+            count[i] += count[i - 1];
+        }
+        for (int i = n - 1; i >= 0; i--) {
+            output[count[(arr[i] / exp) % 10] - 1] = arr[i];
+            count[(arr[i] / exp) % 10]--;
+        }
+        for (int i = 0; i < n; i++) {
+            arr[i] = output[i];
+        }
+        
+        delete[] output;                                         //Algoritm de sortare non-comparativ care procesează numerele cifră cu cifră
+    }
+}
 // ===================== Data Generators =====================
 
-mt19937 rng(42); 
+mt19937 rng(23); 
 
 void gen_random(int* arr, int n) {
     uniform_int_distribution<int> dist(1, 1000000000);
     for (int i = 0; i < n; i++) arr[i] = dist(rng);
-}
+}                                                      //pune numere la intamplare
 
 void gen_sorted(int* arr, int n) {
     for (int i = 0; i < n; i++) arr[i] = i;
@@ -136,12 +210,12 @@ void gen_nearly_sorted(int* arr, int n) {
         int a = dist(rng), b = dist(rng);
         swap(arr[a], arr[b]);
     }
-}
+}                                                     //lista este aproape sortata
 
 void gen_few_unique(int* arr, int n) {
     uniform_int_distribution<int> dist(0, 9);
     for (int i = 0; i < n; i++) arr[i] = dist(rng);
-}
+}                                                     //lista e formata doar din cateva numere unice, adica se repeta
 
 // ===================== Verification =====================
 
@@ -149,7 +223,7 @@ bool is_sorted(int* arr, int n) {
     for (int i = 1; i < n; i++)
         if (arr[i] < arr[i - 1]) return false;
     return true;
-}
+}                                                    //dupa sortare, verifica daca lista este sortata, daca nu afiseaza o eroare
 
 // ===================== Benchmark =====================
 
@@ -157,21 +231,24 @@ struct Algorithm {
     const char* name;
     void (*func)(int, int*);
     bool quadratic;
-};
+};                                                  //'quadratic' este pentru bubble, insertion, selection sort, care sunt O(n^2)
 
 struct Generator {
     const char* name;
     void (*func)(int*, int);
-};
+};                          
 
 int main() {
     Algorithm algos[] = {
         {"BubbleSort",    bubble_sort,    true},
         {"InsertionSort", insertion_sort, true},
         {"SelectionSort", selection_sort, true},
+        {"CocktailSort",  cocktail_sort,  true},
         {"MergeSort",     merge_sort,     false},
         {"QuickSort",     quick_sort,     false},
         {"HeapSort",      heap_sort,      false},
+        {"ShellSort",     shell_sort,     false},
+        {"RadixSort",     radix_sort,     false}
     };
     int num_algos = sizeof(algos) / sizeof(algos[0]);
 
